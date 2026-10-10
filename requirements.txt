@@ -54,3 +54,4 @@ uritemplate==4.2.0
 urllib3==2.7.0
 websockets==16.0
 gunicorn
+web3
