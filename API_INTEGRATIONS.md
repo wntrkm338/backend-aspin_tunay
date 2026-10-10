@@ -8,6 +8,16 @@ Gemini, PayMongo, and Polygon API requests pass through Django. All local config
 - `PAYMONGO_TEST_KEY`, `PAYMONGO_LIVE_KEY`: secret keys beginning with `sk_test_` and `sk_live_`. `PAYMONGO_MODE` controls public totals and checkout, and defaults to test unless the existing legacy `PAYMONGO_SECRET_KEY` is live. Staff can select either configured mode when viewing payments. Clients cannot override checkout mode. The legacy secret setting remains supported as a fallback for its matching mode.
 - `PAYMONGO_PAYMENT_METHODS`: comma-separated methods enabled on your PayMongo account.
 - `FRONTEND_BASE_URL`, `FRONTEND_SUCCESS_URL`, `FRONTEND_CANCEL_URL`: frontend origin and checkout return pages. Set these to the deployed HTTPS site. Return pages are navigation destinations, not proof of payment; paid totals come from PayMongo.
+
+The application defaults and the shared `.env` use these deployed frontend links:
+
+```dotenv
+FRONTEND_BASE_URL=https://aspin-tunay-at-tapat.netlify.app
+FRONTEND_SUCCESS_URL=https://aspin-tunay-at-tapat.netlify.app/donate/success
+FRONTEND_CANCEL_URL=https://aspin-tunay-at-tapat.netlify.app/donate/cancel
+```
+
+Update all three variables in Render's backend Environment settings, replacing any old localhost values, then redeploy the updated backend. Render variables take precedence over `.env` and code defaults. Missing or blank checkout return variables derive from `FRONTEND_BASE_URL`. Password reset and assessment emails also use that base URL. Request a fresh reset email or create a new checkout after deployment; emails and PayMongo sessions already issued retain their original links. For local-only development, explicitly set the three URLs to your local frontend.
 - `POLYGONSCAN_API_KEY`: an **Etherscan V2** key with access to the selected Polygon chain. PolygonScan V1 is retired; moving an old V1 key does not convert it. `POLYGONSCAN_CHAIN_ID=80002` selects Amoy (the existing ledger network); `137` selects Polygon mainnet. Keep this consistent with the ledger's RPC and explorer links.
 
 References: [Gemini generateContent](https://ai.google.dev/api/generate-content), [PayMongo payments](https://docs.paymongo.com/reference/list-all-payments), [Etherscan V2 migration](https://info.etherscan.com/etherscan-api-v1-will-be-fully-deprecated-by-15th-august-2025/).

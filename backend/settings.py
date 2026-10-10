@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+DEFAULT_FRONTEND_BASE_URL = "https://aspin-tunay-at-tapat.netlify.app"
 
 POLYGON_RPC_URL = os.getenv("POLYGON_RPC_URL", "https://polygon-amoy.drpc.org")
 POLYGON_PRIVATE_KEY = os.getenv("POLYGON_PRIVATE_KEY")
@@ -194,7 +195,7 @@ CORS_ALLOWED_ORIGINS = _env_list(
 # Trust only this application's Netlify site, including when an older hosting
 # CORS_ALLOWED_ORIGINS value contains localhost only. A blank value disables it.
 NETLIFY_FRONTEND_ORIGIN = os.getenv(
-    "NETLIFY_FRONTEND_ORIGIN", "https://aspin-tunay-at-tapat.netlify.app"
+    "NETLIFY_FRONTEND_ORIGIN", DEFAULT_FRONTEND_BASE_URL
 ).strip().rstrip("/")
 if NETLIFY_FRONTEND_ORIGIN and NETLIFY_FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(NETLIFY_FRONTEND_ORIGIN)
@@ -258,7 +259,7 @@ GMAIL_OAUTH_CLIENT_ID = os.getenv("GMAIL_OAUTH_CLIENT_ID", "").strip()
 GMAIL_OAUTH_CLIENT_SECRET = os.getenv("GMAIL_OAUTH_CLIENT_SECRET", "").strip()
 GMAIL_OAUTH_REFRESH_TOKEN = os.getenv("GMAIL_OAUTH_REFRESH_TOKEN", "").strip()
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or EMAIL_HOST_USER or "no-reply@aspintunayattapat.local"
-FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
+FRONTEND_BASE_URL = (os.getenv("FRONTEND_BASE_URL") or "").strip().rstrip("/") or DEFAULT_FRONTEND_BASE_URL
 
 PAYMONGO_SECRET_KEY = os.getenv("PAYMONGO_SECRET_KEY", "")
 PAYMONGO_TEST_KEY = os.getenv("PAYMONGO_TEST_KEY", "")
@@ -268,14 +269,8 @@ PAYMONGO_PAYMENT_METHODS = _env_list("PAYMONGO_PAYMENT_METHODS", "card,gcash,pay
 POLYGONSCAN_API_KEY = os.getenv("POLYGONSCAN_API_KEY", "")
 POLYGONSCAN_CHAIN_ID = os.getenv("POLYGONSCAN_CHAIN_ID", "80002")
 CALL_ENDED_WEBHOOK_SECRET = os.getenv("CALL_ENDED_WEBHOOK_SECRET", "")
-FRONTEND_SUCCESS_URL = os.getenv(
-    "FRONTEND_SUCCESS_URL",
-    f"{FRONTEND_BASE_URL.rstrip('/')}/donate/success",
-)
-FRONTEND_CANCEL_URL = os.getenv(
-    "FRONTEND_CANCEL_URL",
-    f"{FRONTEND_BASE_URL.rstrip('/')}/donate/cancel",
-)
+FRONTEND_SUCCESS_URL = (os.getenv("FRONTEND_SUCCESS_URL") or "").strip() or f"{FRONTEND_BASE_URL}/donate/success"
+FRONTEND_CANCEL_URL = (os.getenv("FRONTEND_CANCEL_URL") or "").strip() or f"{FRONTEND_BASE_URL}/donate/cancel"
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
