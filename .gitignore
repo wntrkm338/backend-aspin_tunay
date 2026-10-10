@@ -3,6 +3,5 @@
 .env.example
 __pycache__/
 *.pyc
-media/
 .runtime/
 node_modules/
