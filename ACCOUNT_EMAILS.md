@@ -1,6 +1,8 @@
 # Account emails
 
-Registration OTPs and password-reset links use the same `EMAIL_*` settings and Gmail SMTP sender as Remote Assessment. They send immediately during the request; the assessment reminder worker is not needed for account emails. SMTP errors return HTTP 503 with a safe error message. There is no console-email fallback or reset-token response, including with `DEBUG=True`.
+Registration OTPs and password-reset links use the same `EMAIL_*` settings and Gmail sender as Remote Assessment. They send immediately during the request; the assessment reminder worker is not needed for account emails. Delivery errors return HTTP 503 with a safe error message. There is no console-email fallback or reset-token response, including with `DEBUG=True`.
+
+For Render Free, keep the existing Gmail account and use its HTTPS API because Free blocks normal SMTP ports. Configure `EMAIL_BACKEND=backend.gmail_api.EmailBackend` and the Gmail OAuth credentials following [Gmail on Render setup](GMAIL_RENDER_SETUP.md). Gmail SMTP and App Passwords remain available for environments permitting SMTP connections.
 
 All outgoing account and assessment emails include a branded HTML design and a plain-text alternative. The shared design lives in `accounts/templates/emails/notification.html`; verification emails highlight the code, and reset/assessment emails include action buttons.
 

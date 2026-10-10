@@ -12,7 +12,20 @@ def email_configuration_errors():
         "django.core.mail.backends.dummy.EmailBackend",
         "django.core.mail.backends.filebased.EmailBackend",
     }:
-        return ["Select the SMTP email backend to deliver assessment emails."]
+        return ["Select the Gmail HTTPS or SMTP email backend to deliver emails."]
+    if settings.EMAIL_BACKEND == "backend.gmail_api.EmailBackend":
+        errors = []
+        for key in ('GMAIL_OAUTH_CLIENT_ID', 'GMAIL_OAUTH_CLIENT_SECRET', 'GMAIL_OAUTH_REFRESH_TOKEN'):
+            if not getattr(settings, key, '').strip():
+                errors.append(f'Set {key} in the backend environment for Gmail HTTPS delivery.')
+        sender = parseaddr(settings.DEFAULT_FROM_EMAIL)[1]
+        try:
+            validate_email(sender)
+        except ValidationError:
+            errors.append('Set DEFAULT_FROM_EMAIL to the Gmail account authorized by OAuth, or an authorized sending alias.')
+        if sender.endswith('.local'):
+            errors.append('Replace the local placeholder sender with the Gmail account authorized by OAuth.')
+        return errors
     if settings.EMAIL_BACKEND != "django.core.mail.backends.smtp.EmailBackend":
         return []  # Allows the in-memory test backend and other delivery providers.
     errors = []

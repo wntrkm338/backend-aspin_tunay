@@ -1,4 +1,4 @@
-"""Email verification and delivery using the shared backend SMTP configuration."""
+"""Email verification and delivery using the shared backend mail configuration."""
 import logging
 import secrets
 import uuid

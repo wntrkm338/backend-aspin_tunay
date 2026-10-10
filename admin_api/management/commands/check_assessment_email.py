@@ -9,13 +9,28 @@ from backend.email_config import email_configuration_errors
 
 
 class Command(BaseCommand):
-    help = 'Validate assessment email settings; --connect verifies SMTP login without sending any email.'
+    help = 'Validate email settings; --connect verifies Gmail OAuth or SMTP login without sending email.'
 
     def add_arguments(self, parser):
         parser.add_argument('--connect', action='store_true')
 
     def handle(self, *args, **options):
         errors = email_configuration_errors()
+        if settings.EMAIL_BACKEND == 'backend.gmail_api.EmailBackend':
+            if errors:
+                raise CommandError(' '.join(errors))
+            self.stdout.write('Gmail HTTPS configuration is complete.')
+            if options['connect']:
+                from backend.gmail_api import GmailOAuthError
+                try:
+                    with get_connection(fail_silently=False):
+                        pass  # Refreshes OAuth credentials; never sends mail.
+                except GmailOAuthError as exc:
+                    raise CommandError(str(exc)) from None
+                self.stdout.write(self.style.SUCCESS('Gmail OAuth refresh succeeded. No emails were sent; sending permission and inbox delivery were not tested.'))
+            else:
+                self.stdout.write('Run with --connect to verify Gmail OAuth without sending email.')
+            return
         if settings.EMAIL_BACKEND != 'django.core.mail.backends.smtp.EmailBackend':
             errors.append('This check requires the SMTP backend.')
         if errors:

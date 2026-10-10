@@ -2,6 +2,8 @@
 
 Assessment confirmations, reschedules, cancellations, and reminders use Django's SMTP backend. The local backend environment is set to Gmail's `smtp.gmail.com`, port `587`, with STARTTLS. The sender defaults to the Gmail account used to authenticate.
 
+For Render Free, normal SMTP ports are blocked. Use the same Gmail account through the new HTTPS backend following [Gmail on Render setup](GMAIL_RENDER_SETUP.md). The templates, assessment queue, recipient selection, and reminder worker are shared by both delivery methods.
+
 ## Complete the Gmail credentials
 
 1. Enable 2-Step Verification on the sending Google account, then create an [App Password](https://support.google.com/mail/answer/185833?hl=en). Use this password for SMTP, not the normal Google account password. Some managed accounts restrict App Passwords.
