@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f2f5f0;color:#243b32;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f5f0;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border:1px solid #dce6dd;border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:30px 28px;background-color:#245c44;border-radius:16px 16px 0 0;">
+          <p style="margin:0 0 8px;color:#ffffff;font-size:26px;font-weight:bold;letter-spacing:-0.5px;">Transpawrrency</p>
+          <p style="margin:0;color:#deecdf;font-size:13px;line-height:20px;">Aspin Tunay at Tapat &middot; A little care. A brighter future.</p>
+        </td></tr>
+        <tr><td style="padding:32px 28px;">
+          <p style="margin:0 0 12px;color:#39734f;font-size:12px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">{{ category }}</p>
+          <h1 style="margin:0 0 22px;font-size:26px;line-height:34px;color:#203e30;">{{ subject }}</h1>
+          <div style="font-size:15px;line-height:25px;overflow-wrap:anywhere;word-break:break-word;">{{ body|linebreaksbr }}</div>
+          {% if code %}
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+            <tr><td align="center" style="padding:24px 12px;border:1px solid #cbdcc9;border-radius:12px;background-color:#f0f6ec;">
+              <p style="margin:0 0 12px;font-size:12px;color:#456647;font-weight:bold;">YOUR VERIFICATION CODE</p>
+              <p style="margin:0;font-family:Consolas,monospace;font-size:34px;line-height:44px;letter-spacing:6px;font-weight:bold;color:#245c44;">{{ code }}</p>
+              <p style="margin:12px 0 0;font-size:12px;color:#456647;">Valid for 10 minutes &middot; One-time use</p>
+            </td></tr>
+          </table>
+          {% endif %}
+          {% if action_url %}
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:26px;">
+            <tr><td bgcolor="#245c44" style="border-radius:8px;text-align:center;">
+              <a href="{{ action_url }}" style="display:inline-block;padding:16px 26px;border:1px solid #245c44;border-radius:8px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">{{ action_label }}</a>
+            </td></tr>
+          </table>
+          <p style="margin:20px 0 6px;font-size:12px;line-height:19px;color:#66766c;">If the button does not open, copy this link into your browser:</p>
+          <p style="margin:0;font-size:12px;line-height:19px;word-break:break-all;"><a href="{{ action_url }}" style="color:#245c44;">{{ action_url }}</a></p>
+          {% endif %}
+          {% if note %}<p style="margin:24px 0 0;padding:16px;background-color:#faf7ed;border-radius:8px;font-size:13px;line-height:21px;color:#665c3c;">{{ note }}</p>{% endif %}
+        </td></tr>
+        <tr><td style="padding:22px 28px;border-top:1px solid #e4ebe2;background-color:#fafcf8;border-radius:0 0 16px 16px;">
+          <p style="margin:0 0 6px;font-size:13px;line-height:20px;font-weight:bold;color:#395442;">Thank you for being part of our community.</p>
+          <p style="margin:0;font-size:12px;line-height:20px;color:#6b7b6d;">Transpawrrency &middot; Aspin Tunay at Tapat<br>This is an automated notification.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
