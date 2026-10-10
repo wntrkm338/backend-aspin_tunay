@@ -25,6 +25,25 @@ class PublicSiteDataTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+    def test_animal_list_batches_application_lookups_and_uses_latest_unreleased_status(self):
+        for index in range(20):
+            Animal.objects.create(id=f'PERF-{index}', name=f'Animal {index}',
+                status='Ready for Adoption', availability='Available')
+        AdoptionApplication.objects.create(animalId='PERF-0', status='Pending', age=25)
+        AdoptionApplication.objects.create(animalId='PERF-0', status='Completed', age=25)
+        AdoptionApplication.objects.create(animalId='PERF-0', status='Declined', age=25)
+        AdoptionApplication.objects.create(animalId='PERF-1', status='Returned', age=25)
+        # One animal query, one story prefetch, and one application query,
+        # independent of how many animals are serialized.
+        with self.assertNumQueries(3):
+            response = self.client.get('/api/public/animals/')
+        self.assertEqual(response.status_code, 200)
+        animals = {animal['id']: animal for animal in response.data}
+        self.assertEqual(animals['PERF-0']['application_status'], 'Completed')
+        self.assertTrue(animals['PERF-0']['is_adopted_by_application'])
+        self.assertFalse(animals['PERF-1']['has_application'])
+        self.assertTrue(animals['PERF-1']['is_available_for_adoption'])
+
     def test_public_animals_and_stories_are_readable_without_admin_api(self):
         animal = Animal.objects.create(
             id="A001",

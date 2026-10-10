@@ -442,7 +442,21 @@ class PublicAnimalListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        animals = Animal.objects.prefetch_related('stories').all().order_by('-created_at')
+        animals = list(Animal.objects.prefetch_related('stories').all().order_by('-created_at'))
+        # Load application status once for the whole list rather than querying
+        # separately for each animal during serialization.
+        applications = (
+            AdoptionApplication.objects.filter(animalId__in=[str(animal.id) for animal in animals])
+            .exclude(status__in=RELEASED_APPLICATION_STATUSES)
+            .only('animalId', 'status', 'submittedAt')
+            .order_by('-submittedAt', '-id')
+        )
+        latest_by_animal = {}
+        for application in applications:
+            latest_by_animal.setdefault(str(application.animalId), application)
+        for animal in animals:
+            animal._blocking_application = latest_by_animal.get(str(animal.id))
+            animal._blocking_application_loaded = True
         return Response(PublicAnimalSerializer(animals, many=True, context={'request': request}).data)
 
 
@@ -466,7 +480,9 @@ class PublicImpactStatsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        applications = AdoptionApplication.objects.all()
+        # These public statistics need only animal IDs and statuses, never the
+        # full application rows containing applicant details and uploads.
+        applications = list(AdoptionApplication.objects.values_list('animalId', 'status'))
         adopted_statuses = {
             'Completed',
             'Verified Adopted',
@@ -476,17 +492,17 @@ class PublicImpactStatsView(APIView):
         }
 
         pending_animal_ids = [
-            str(app.animalId) for app in applications
-            if app.status in {'Pending', 'Under Review'}
+            str(animal_id) for animal_id, application_status in applications
+            if application_status in {'Pending', 'Under Review'}
         ]
         adopted_animal_ids = [
-            str(app.animalId) for app in applications
-            if app.status in adopted_statuses
+            str(animal_id) for animal_id, application_status in applications
+            if application_status in adopted_statuses
         ]
 
         return Response({
             'rescued': Animal.objects.count(),
-            'adoptions': applications.filter(status__in=adopted_statuses).count(),
+            'adoptions': sum(application_status in adopted_statuses for _, application_status in applications),
             'intakes': IntakeRecord.objects.count(),
             'pending_animal_ids': pending_animal_ids,
             'adopted_animal_ids': adopted_animal_ids,

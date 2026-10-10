@@ -191,6 +191,13 @@ CORS_ALLOWED_ORIGINS = _env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000",
 )
+# Trust only this application's Netlify site, including when an older hosting
+# CORS_ALLOWED_ORIGINS value contains localhost only. A blank value disables it.
+NETLIFY_FRONTEND_ORIGIN = os.getenv(
+    "NETLIFY_FRONTEND_ORIGIN", "https://aspin-tunay-at-tapat.netlify.app"
+).strip().rstrip("/")
+if NETLIFY_FRONTEND_ORIGIN and NETLIFY_FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(NETLIFY_FRONTEND_ORIGIN)
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",

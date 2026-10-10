@@ -35,6 +35,20 @@ Polygon verification checks transaction receipts alongside existing local ledger
 
 Never deploy the backend `.env` in the React static directory. The four old `REACT_APP_*` provider variables were removed, and the frontend Google SDK dependencies were removed. Rebuild frontend assets after removing old hosting environment variables as well.
 
+## Aspin Netlify / Render rollout
+
+The deployed frontend is `https://aspin-tunay-at-tapat.netlify.app`. Django appends the exact `NETLIFY_FRONTEND_ORIGIN` to its CORS allowlist, with that domain as the default, even if an older `CORS_ALLOWED_ORIGINS` environment variable lists localhost only. Another Netlify site's origin is not allowed. Set `NETLIFY_FRONTEND_ORIGIN` to a different exact HTTPS origin when changing sites, or blank to disable this additional entry.
+
+Deploy the updated `backend-main` source to Render for the CORS and query optimizations to take effect. To repair CORS immediately on the existing backend version, add `https://aspin-tunay-at-tapat.netlify.app` to Render's `CORS_ALLOWED_ORIGINS` environment variable and restart/redeploy the service. Keep `CORS_ALLOW_ALL_ORIGINS=False`.
+
+Build the frontend using `npm run build:netlify` and publish `frontend-master/build` to Netlify (or let its checked-in `netlify.toml` perform the build). This version uses the same-origin proxy. Browser requests still targeting the Render hostname indicate a direct-to-Render or older bundle; that bundle needs the Render CORS fix above. The homepage now loads animal cards independently of donation totals and bounds public requests to 20 seconds, with a visible retry for animal-load failures. The animal-list endpoint loads application statuses in a single batch, keeping its query count at three rather than increasing with the number of animals.
+
+A `401` for the frontend's `/manifest.json` is a separate Netlify access-control response, not Django CORS. Verify the site's Netlify access settings and authenticate through its access screen when protection is intentional. Autoplay `AbortError` messages concern video playback and do not cause API requests to fail.
+
+If the Render service uses the Free instance type, it sleeps after 15 idle minutes and can take about a minute to restart. Netlify's proxy deadline is 26 seconds. Frontend changes cannot remove that hosting startup delay; use an always-running service instance when continuous availability is required.
+
+References: [Render Free service startup](https://render.com/docs/free#spinning-down-on-idle), [Netlify proxy limitations](https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/#limitations).
+
 ## Verification
 
 `python manage.py test backend.test_integrations --settings=backend.test_settings`
