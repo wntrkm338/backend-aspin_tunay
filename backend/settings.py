@@ -72,7 +72,7 @@ SECRET_KEY = os.getenv(
 )
 
 DEBUG = _env_bool("DEBUG", True)
-ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS", "backend-aspin-tunay.onrender.com,127.0.0.1,localhost")
+ALLOWED_HOSTS = ["backend-aspin-tunay.onrender.com", "127.0.0.1", "localhost"]
 
 
 INSTALLED_APPS = [
