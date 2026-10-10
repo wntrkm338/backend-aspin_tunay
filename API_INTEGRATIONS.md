@@ -1,6 +1,6 @@
 # Server-side API integrations
 
-Gemini, PayMongo, and Polygon API requests pass through Django. All local configuration is in `backend-main/.env`, including the public frontend API origin and development proxy target. There is no separate frontend `.env`. Use `backend-main/.env.example` as a reference, without overwriting your existing database and email settings. Frontend start, build, and test commands load only `REACT_APP_API_BASE_URL` and `BACKEND_PROXY_TARGET` from the shared file; provider credentials stay on the server. Exported environment variables take precedence over the file.
+Gemini, PayMongo, and Polygon API requests pass through Django. All local configuration is in `backend-main/.env`, including the public frontend API origin and development proxy target. Edit that single file for database, Gmail, provider credentials, and public URLs. There is no separate frontend `.env` or `.env.example`. Frontend start, build, and test commands load only `REACT_APP_API_BASE_URL` and `BACKEND_PROXY_TARGET` from the shared file; provider credentials stay on the server. Exported environment variables take precedence over the file. The private `.env` is excluded from Git; deployment environments still need the same backend settings configured privately.
 
 ## Configuration
 

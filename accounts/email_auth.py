@@ -16,6 +16,7 @@ from rest_framework.throttling import AnonRateThrottle
 
 from backend.email_config import email_configuration_errors
 from backend.email_templates import render_email
+from backend.gmail_api import GmailDeliveryError, GmailOAuthError
 from .models import AuthEmailLimit, RegistrationVerification
 
 logger = logging.getLogger(__name__)
@@ -36,11 +37,15 @@ class OTPAttemptThrottle(AnonRateThrottle):
 
 class EmailDeliveryError(APIException):
     status_code = 503
+    wait = EMAIL_COOLDOWN
     default_detail = 'We could not send the email. Please try again later or contact the administrator.'
 
 
 def deliver_email(subject, body, recipient, *, html_body=None, **design):
-    if email_configuration_errors():
+    configuration_errors = email_configuration_errors()
+    if configuration_errors:
+        # These diagnostics contain setting names and instructions, never values.
+        logger.warning('Account email configuration is incomplete: %s', ' '.join(configuration_errors))
         raise EmailDeliveryError()
     try:
         delivered = send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient], fail_silently=False,
@@ -51,7 +56,11 @@ def deliver_email(subject, body, recipient, *, html_body=None, **design):
         raise
     except Exception as exc:
         # Never log reset URLs, OTPs, passwords, or SMTP credentials.
-        logger.warning('Account email delivery failed (%s).', type(exc).__name__)
+        if type(exc) in (GmailOAuthError, GmailDeliveryError):
+            # Our Gmail backend sanitizes provider errors before raising them.
+            logger.warning('Account email delivery failed (%s): %s', type(exc).__name__, str(exc))
+        else:
+            logger.warning('Account email delivery failed (%s).', type(exc).__name__)
         raise EmailDeliveryError() from None
 
 

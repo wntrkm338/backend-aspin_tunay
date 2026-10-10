@@ -16,6 +16,7 @@ class NetlifyCorsTests(SimpleTestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response['Access-Control-Allow-Origin'], 'https://aspin-tunay-at-tapat.netlify.app')
             self.assertIn('authorization', response['Access-Control-Allow-Headers'])
+            self.assertIn('Retry-After', response['Access-Control-Expose-Headers'])
 
     def test_another_netlify_site_is_not_trusted(self):
         response = APIClient().options('/api/public/animals/',

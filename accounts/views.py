@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .email_auth import (
-    AuthEmailThrottle, OTPAttemptThrottle, deliver_email, reserve_email_send,
+    EMAIL_COOLDOWN, AuthEmailThrottle, OTPAttemptThrottle, deliver_email, reserve_email_send,
     start_registration, resend_registration, verify_registration,
 )
 from .serializers import CustomTokenSerializer, ForgotPasswordSerializer, RegisterSerializer, ResetPasswordSerializer
@@ -97,7 +97,8 @@ class ForgotPasswordView(APIView):
                 note='If you did not request this, ignore this email. Your password has not changed.',
             )
         # Never disclose reset tokens through the API, even during development.
-        return Response({'message': 'If an account with that email exists, reset instructions have been sent. Check your inbox and Spam folder.'})
+        return Response({'message': 'If an account with that email exists, reset instructions have been sent. Check your inbox and Spam folder.'},
+                        headers={'Retry-After': str(EMAIL_COOLDOWN)})
 
 
 class ResetPasswordView(APIView):

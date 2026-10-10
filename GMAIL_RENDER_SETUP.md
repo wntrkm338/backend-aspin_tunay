@@ -12,6 +12,8 @@ This system keeps its existing Gmail sender, branded templates, OTP verification
 
 ## Configure Render
 
+`backend-main/.env` is the single local configuration file for both applications. It now includes the three Gmail OAuth fields. Fill them there after authorizing Gmail, and change its existing `EMAIL_BACKEND` setting to `backend.gmail_api.EmailBackend` when ready. Do not add a second definition of the same setting. The `.env` stays private and is excluded from Git, so pushing source alone does not copy its values to Render.
+
 In the backend service's Environment settings, set:
 
 ```dotenv
@@ -50,6 +52,8 @@ After OAuth works, `process_assessment_emails --retry-connections` can safely re
 
 ## Other errors from the browser
 
+- A `503` from `/api/password/forgot/` means email delivery is unavailable. If the Render variables above have not been configured and the updated source deployed, do that first. Pushing code alone does not authorize Gmail. Run the connection check and review Render logs for missing setting names or sanitized OAuth errors.
+- A `429` means the email request limit was reached. Even a failed email attempt reserves the 60-second cooldown; there is also a five-attempt hourly limit per recipient and a separate 30-request hourly limit per client IP. Wait for the response's `Retry-After` delay. The updated forgot-password page displays a countdown and blocks repeat submissions. Redeploy `frontend-master` to use it. Waiting clears the rate limit; it does not repair Gmail configuration.
 - A `401` from `/api/login/` means backend authentication rejected the username/password. Use the registered username, not the account email. Registration creates the login account only after successful OTP verification. An account in local SQLite is not necessarily present in the deployed database.
 - A `401` for Netlify's `/manifest.json` comes from Netlify's access settings and is separate from Gmail and Django authentication. Check site access or authenticate through Netlify's access screen when protection is intentional.
 - Video autoplay `AbortError` messages do not prevent account email delivery.

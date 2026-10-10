@@ -179,13 +179,33 @@ class AccountAuthTests(TestCase):
     def test_reset_reports_smtp_failure_without_leaking_reset_link(self, _):
         response = self.request_reset(self.user().email)
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response['Retry-After'], '60')
         self.assertNotIn('token', str(response.data))
 
     def test_reset_email_and_username_share_cooldown(self):
         user = self.user()
-        self.assertEqual(self.request_reset(user.username).status_code, 200)
-        self.assertEqual(self.request_reset(user.email).status_code, 429)
+        sent = self.request_reset(user.username)
+        self.assertEqual(sent.status_code, 200)
+        self.assertEqual(sent['Retry-After'], '60')
+        limited = self.request_reset(user.email)
+        self.assertEqual(limited.status_code, 429)
+        self.assertGreater(int(limited['Retry-After']), 0)
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(EMAIL_BACKEND='backend.gmail_api.EmailBackend',
+                       GMAIL_OAUTH_CLIENT_ID='', GMAIL_OAUTH_CLIENT_SECRET='', GMAIL_OAUTH_REFRESH_TOKEN='')
+    @patch('backend.gmail_api.requests.post')
+    def test_missing_gmail_configuration_logs_instructions_and_keeps_failed_attempt_cooldown(self, post):
+        user = self.user()
+        with self.assertLogs('accounts.email_auth', level='WARNING') as logs:
+            failed = self.request_reset(user.email)
+        self.assertEqual(failed.status_code, 503)
+        self.assertEqual(failed['Retry-After'], '60')
+        self.assertIn('Set GMAIL_OAUTH_REFRESH_TOKEN', logs.output[0])
+        self.assertNotIn(user.email, logs.output[0])
+        self.assertNotIn('GMAIL_OAUTH', str(failed.data))
+        self.assertEqual(self.request_reset(user.username).status_code, 429)
+        post.assert_not_called()
 
     def test_auth_challenges_are_excluded_from_application_backups(self):
         from admin_api.data_backup import backup_models
